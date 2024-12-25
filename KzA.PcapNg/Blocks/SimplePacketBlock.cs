@@ -42,5 +42,15 @@ namespace KzA.PcapNg.Blocks
             BinaryPrimitives.WriteUInt32LittleEndian(binSpan[(12 + 4 * PacketData.Length)..], TotalLength2);
             return bin;
         }
+
+        public void Parse(ReadOnlySpan<byte> data, uint totalLen, bool endian = true)
+        {
+            OriginalPacketLength = endian ? BinaryPrimitives.ReadUInt32LittleEndian(data[8..]) : BinaryPrimitives.ReadUInt32BigEndian(data[8..]);
+            var packetDataLength = (data.Length - 16) / 4;
+            PacketData = new uint[packetDataLength];
+            var pdataSpan = new Span<uint>(PacketData);
+            var pdataBinSpan = MemoryMarshal.AsBytes(pdataSpan);
+            data[12..(int)(totalLen - 4)].CopyTo(pdataBinSpan);
+        }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using KzA.PcapNg.Blocks.Options;
 using KzA.PcapNg.DataTypes;
+using KzA.PcapNg.Helper;
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
@@ -66,10 +67,81 @@ namespace KzA.PcapNg.Blocks
             return bin;
         }
 
+        public void Parse(ReadOnlySpan<byte> data, uint totalLen, bool endian)
+        {
+            LinkType = (LinkType)(endian ? BinaryPrimitives.ReadUInt16LittleEndian(data[8..]) : BinaryPrimitives.ReadUInt16BigEndian(data[8..]));
+            SnapLen = endian ? BinaryPrimitives.ReadUInt32LittleEndian(data[12..]) : BinaryPrimitives.ReadUInt32BigEndian(data[12..]);
+            var offset = 16;
+            var reachedEnd = false;
+            while (offset < totalLen - 4 && !reachedEnd)
+            {
+                var code = endian ? BinaryPrimitives.ReadUInt16LittleEndian(data[offset..]) : BinaryPrimitives.ReadUInt16BigEndian(data[offset..]);
+                var length = endian ? BinaryPrimitives.ReadUInt16LittleEndian(data[(offset + 2)..]) : BinaryPrimitives.ReadUInt16BigEndian(data[(offset + 2)..]);
+                switch (code)
+                {
+                    case 0x0000:
+                        reachedEnd = true;
+                        break;
+                    case 0x0002:
+                        Name = Encoding.UTF8.GetString(data[(offset + 4)..(offset + length + 4)]);
+                        break;
+                    case 0x0003:
+                        Description = Encoding.UTF8.GetString(data[(offset + 4)..(offset + length + 4)]);
+                        break;
+                    case 0x0004:
+                        IPv4Addrs.Add((BinaryPrimitives.ReadUInt32BigEndian(data[(offset + 4)..]), BinaryPrimitives.ReadUInt32BigEndian(data[(offset + 8)..])));
+                        break;
+                    case 0x0005:
+                        IPv6Addrs.Add((BinaryPrimitives.ReadUInt128BigEndian(data[(offset + 4)..]), data[offset + 20]));
+                        break;
+                    case 0x0006:
+                        MACAddr = data[(offset + 4)..(offset + 10)].ToArray();
+                        break;
+                    case 0x0007:
+                        EUIAddr = BinaryPrimitives.ReadUInt64BigEndian(data[(offset + 4)..]);
+                        break;
+                    case 0x0008:
+                        Speed = endian ? BinaryPrimitives.ReadUInt64LittleEndian(data[(offset + 4)..]) : BinaryPrimitives.ReadUInt64BigEndian(data[(offset + 4)..]);
+                        break;
+                    case 0x0009:
+                        TsResol = data[offset + 4];
+                        break;
+                    case 0x000B:
+                        Filter = (data[offset + 4], Encoding.UTF8.GetString(data[(offset + 5)..(offset + 4 + length)]));
+                        break;
+                    case 0x000C:
+                        OS = Encoding.UTF8.GetString(data[(offset + 4)..(offset + 4 + length)]);
+                        break;
+                    case 0x000D:
+                        FcsLen = data[offset + 4];
+                        break;
+                    case 0x000E:
+                        TsOffset = endian ? BinaryPrimitives.ReadInt64LittleEndian(data[(offset + 4)..]) : BinaryPrimitives.ReadInt64BigEndian(data[(offset + 4)..]);
+                        break;
+                    case 0x000F:
+                        Hardware = Encoding.UTF8.GetString(data[(offset + 4)..(offset + 4 + length)]);
+                        break;
+                    case 0x0010:
+                        TxSpeed = endian ? BinaryPrimitives.ReadUInt64LittleEndian(data[(offset + 4)..]) : BinaryPrimitives.ReadUInt64BigEndian(data[(offset + 4)..]);
+                        break;
+                    case 0x0011:
+                        RxSpeed = endian ? BinaryPrimitives.ReadUInt64LittleEndian(data[(offset + 4)..]) : BinaryPrimitives.ReadUInt64BigEndian(data[(offset + 4)..]);
+                        break;
+                    case 0x0012:
+                        IANATzName = Encoding.UTF8.GetString(data[(offset + 4)..(offset + 4 + length)]);
+                        break;
+                    case 0x0001:
+                        Comments.Add(Encoding.UTF8.GetString(data[(offset + 4)..(offset + 4 + length)]));
+                        break;
+                }
+                offset += Misc.DwordPaddedLength(length) + 4;
+            }
+        }
+
         public if_name? Name { get; set; }
         public if_description? Description { get; set; }
-        public IEnumerable<if_IPv4addr> IPv4Addrs { get; set; } = [];
-        public IEnumerable<if_IPv6addr> IPv6Addrs { get; set; } = [];
+        public List<if_IPv4addr> IPv4Addrs { get; set; } = [];
+        public List<if_IPv6addr> IPv6Addrs { get; set; } = [];
         public if_MACaddr? MACAddr { get; set; }
         public if_EUIaddr? EUIAddr { get; set; }
         public if_speed? Speed { get; set; }
@@ -84,6 +156,6 @@ namespace KzA.PcapNg.Blocks
         public if_txspeed? TxSpeed { get; set; }
         public if_rxspeed? RxSpeed { get; set; }
         public if_iana_tzname? IANATzName { get; set; }
-        public IEnumerable<opt_comment> Comments { get; set; } = [];
+        public List<opt_comment> Comments { get; set; } = [];
     }
 }

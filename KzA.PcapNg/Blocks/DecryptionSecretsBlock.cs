@@ -26,10 +26,6 @@ namespace KzA.PcapNg.Blocks
         private uint opt_endofopt => 0;
         public uint TotalLength2 => TotalLength;
 
-        public DecryptionSecretsBlock()
-        {
-        }
-
         public byte[] GetBytes()
         {
             var bin = new byte[TotalLength];
@@ -53,6 +49,11 @@ namespace KzA.PcapNg.Blocks
             return bin;
         }
 
-        public IEnumerable<opt_comment> Comments { get; set; } = [];
+        public void Parse(ReadOnlySpan<byte> data, uint totalLen, bool endian)
+        {
+            throw new NotImplementedException();
+        }
+
+        public List<opt_comment> Comments { get; set; } = [];
     }
 }

@@ -6,12 +6,13 @@ using System.Threading.Tasks;
 
 namespace KzA.PcapNg.DataTypes
 {
-    public struct Timestamp
+    public struct Timestamp : IComparable<Timestamp>
     {
         private static readonly byte[] supportedResol = [0, 1, 2, 3, 4, 5, 6, 7];
 
         public uint Upper;
         public uint Lower;
+        public readonly ulong Value => (ulong)Upper << 32 | Lower;
         public long Offset;
         public bool BaseBit;
         public byte Exponent;
@@ -24,19 +25,27 @@ namespace KzA.PcapNg.DataTypes
             DateTime = t;
         }
 
+        public Timestamp(uint upper, uint lower, long offset = 0, bool baseBit = false, byte exponent = 6)
+        {
+            Upper = upper;
+            Lower = lower;
+            Offset = offset;
+            BaseBit = baseBit;
+            Exponent = exponent;
+        }
+
         public DateTime DateTime
         {
             readonly get
-            {
-                var value = (ulong)Upper << 32 | Lower;
+            {;
                 var baseTime = DateTime.UnixEpoch.AddSeconds(Offset);
                 if (BaseBit)
                 {
-                    return baseTime.AddSeconds(value * Math.Pow(2, Exponent));
+                    return baseTime.AddSeconds(Value * Math.Pow(2, Exponent));
                 }
                 else
                 {
-                    return baseTime.AddTicks((long)(value * Math.Pow(10, 7 - Exponent)));
+                    return baseTime.AddTicks((long)(Value * Math.Pow(10, 7 - Exponent)));
                 }
             }
             set
@@ -50,6 +59,26 @@ namespace KzA.PcapNg.DataTypes
                 Upper = (uint)(v >> 32);
                 Lower = (uint)v;
             }
+        }
+
+        public readonly Timestamp ToTickBased()
+        {
+            return new Timestamp(DateTime, Offset, 7);
+        }
+
+        public readonly Timestamp ToMicrosecondBased()
+        {
+            return new Timestamp(DateTime, Offset, 6);
+        }
+
+        public readonly Timestamp ToMillisecondBased()
+        {
+            return new Timestamp(DateTime, Offset, 3);
+        }
+
+        public readonly int CompareTo(Timestamp other)
+        {
+            return Value.CompareTo(other.Value);
         }
     }
 }

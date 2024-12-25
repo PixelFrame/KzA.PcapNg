@@ -40,5 +40,10 @@ namespace KzA.PcapNg.Blocks
             BinaryPrimitives.WriteUInt32LittleEndian(binSpan[(offset + 4)..], TotalLength2);
             return bin;
         }
+
+        public void Parse(ReadOnlySpan<byte> data, uint totalLen, bool endian)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

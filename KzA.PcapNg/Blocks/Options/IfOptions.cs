@@ -202,6 +202,7 @@ namespace KzA.PcapNg.Blocks.Options
         public if_tsresol() { }
         public if_tsresol(bool baseBit, byte exponent) { BaseBit = baseBit; Exponent = exponent; }
         public static implicit operator if_tsresol((bool baseBit, byte exponent) v) => new(v.baseBit, v.exponent);
+        public static implicit operator if_tsresol(byte v) => new((v & 0x80) != 0, (byte)(v & 0x7F));
     }
 
     [Obsolete("Use if_iana_tzname instead")]

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using KzA.PcapNg.DataTypes;
+using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,6 +33,7 @@ namespace KzA.PcapNg.Blocks.Options
         public isb_starttime() { }
         public isb_starttime(uint upper, uint lower) { Upper = upper; Lower = lower; }
         public static implicit operator isb_starttime((uint upper, uint lower) v) => new(v.upper, v.lower);
+        public static implicit operator isb_starttime(Timestamp v) => new(v.Upper, v.Lower);
 
     }
 
@@ -58,6 +60,7 @@ namespace KzA.PcapNg.Blocks.Options
         public isb_endtime() { }
         public isb_endtime(uint upper, uint lower) { Upper = upper; Lower = lower; }
         public static implicit operator isb_endtime((uint upper, uint lower) v) => new(v.upper, v.lower);
+        public static implicit operator isb_endtime(Timestamp v) => new(v.Upper, v.Lower);
     }
 
     public class isb_ifrecv : U64Option

@@ -7,15 +7,20 @@ using System.Threading.Tasks;
 
 namespace KzA.PcapNg.IO
 {
-    public class BlockWriter : IDisposable
+    public class PcapNgWriter : IDisposable
     {
-        private Stream _stream;
-        private BinaryWriter _writer;
+        private readonly Stream _stream;
+        private readonly BinaryWriter _writer;
         private bool disposedValue;
 
-        public BlockWriter(string path)
+        public PcapNgWriter(string path, bool removeExisting = true)
         {
-            _stream = File.OpenWrite(path);
+            if (File.Exists(path))
+            {
+                if(removeExisting) File.Delete(path);
+                else throw new IOException("File already exists");
+            }
+            _stream = File.Open(path, FileMode.CreateNew);
             _writer = new(_stream);
         }
 
@@ -32,7 +37,7 @@ namespace KzA.PcapNg.IO
             }
         }
 
-        ~BlockWriter()
+        ~PcapNgWriter()
         {
             Dispose();
         }

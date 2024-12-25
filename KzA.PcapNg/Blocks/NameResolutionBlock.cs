@@ -56,6 +56,11 @@ namespace KzA.PcapNg.Blocks
             return bin;
         }
 
+        public void Parse(ReadOnlySpan<byte> data, uint totalLen, bool endian)
+        {
+            throw new NotImplementedException();
+        }
+
         public ns_dnsname DnsName { get; set; } = ".";
         public ns_dnsIP4addr? DnsIP4Addr { get; set; }
         public ns_dnsIP6addr? DnsIP6Addr { get; set; }

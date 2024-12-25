@@ -27,8 +27,8 @@ namespace KzA.PcapNg.Blocks
                 if (Hardware != null) options.Add(Hardware);
                 if (OS != null) options.Add(OS);
                 if (UserAppl != null) options.Add(UserAppl);
-                options.AddRange(Comments);
-                options.AddRange(CustomOptions);
+                if (Comments != null) options.AddRange(Comments);
+                if (CustomOptions != null) options.AddRange(CustomOptions);
                 return options;
             }
         }
@@ -81,11 +81,13 @@ namespace KzA.PcapNg.Blocks
                         UserAppl = Encoding.UTF8.GetString(data[(offset + 4)..(offset + 4 + length)]);
                         break;
                     case 0x0001:
+                        Comments ??= [];
                         Comments.Add(Encoding.UTF8.GetString(data[(offset + 4)..(offset + 4 + length)]));
                         break;
                     default:
                         var customOption = new CustomOption();
                         customOption.Parse(data[offset..], code, length);
+                        CustomOptions ??= [];
                         CustomOptions.Add(customOption);
                         break;
                 }
@@ -99,7 +101,7 @@ namespace KzA.PcapNg.Blocks
             uint len = binReader.ReadUInt32();
             uint bom = binReader.ReadUInt32();
             LittleEndian = bom == 0x1A2B3C4D;
-            if(!LittleEndian) len = BinaryPrimitives.ReverseEndianness(len);
+            if (!LittleEndian) len = BinaryPrimitives.ReverseEndianness(len);
             binReader.BaseStream.Seek(-12, SeekOrigin.Current);
             var data = binReader.ReadBytes((int)len);
             Parse(data, len, LittleEndian);
@@ -108,7 +110,7 @@ namespace KzA.PcapNg.Blocks
         public shb_hardware? Hardware { get; set; }
         public shb_os? OS { get; set; }
         public shb_userappl? UserAppl { get; set; }
-        public List<opt_comment> Comments { get; set; } = [];
-        public List<CustomOption> CustomOptions { get; set; } = [];
+        public List<opt_comment>? Comments { get; set; }
+        public List<CustomOption>? CustomOptions { get; set; }
     }
 }

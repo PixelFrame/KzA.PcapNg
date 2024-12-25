@@ -25,8 +25,8 @@ namespace KzA.PcapNg.Blocks
                 var list = new List<OptionBase>();
                 if (Name != null) list.Add(Name);
                 if (Description != null) list.Add(Description);
-                list.AddRange(IPv4Addrs);
-                list.AddRange(IPv6Addrs);
+                if (IPv4Addrs != null) list.AddRange(IPv4Addrs);
+                if (IPv6Addrs != null) list.AddRange(IPv6Addrs);
                 if (MACAddr != null) list.Add(MACAddr);
                 if (EUIAddr != null) list.Add(EUIAddr);
                 if (Speed != null) list.Add(Speed);
@@ -42,8 +42,8 @@ namespace KzA.PcapNg.Blocks
                 if (TxSpeed != null) list.Add(TxSpeed);
                 if (RxSpeed != null) list.Add(RxSpeed);
                 if (IANATzName != null) list.Add(IANATzName);
-                list.AddRange(Comments);
-                list.AddRange(CustomOptions);
+                if (Comments != null) list.AddRange(Comments);
+                if (CustomOptions != null) list.AddRange(CustomOptions);
                 return list;
             }
         }
@@ -93,9 +93,11 @@ namespace KzA.PcapNg.Blocks
                         Description = Encoding.UTF8.GetString(data[(offset + 4)..(offset + length + 4)]);
                         break;
                     case 0x0004:
+                        IPv4Addrs ??= [];
                         IPv4Addrs.Add((BinaryPrimitives.ReadUInt32BigEndian(data[(offset + 4)..]), BinaryPrimitives.ReadUInt32BigEndian(data[(offset + 8)..])));
                         break;
                     case 0x0005:
+                        IPv6Addrs ??= [];
                         IPv6Addrs.Add((BinaryPrimitives.ReadUInt128BigEndian(data[(offset + 4)..]), data[offset + 20]));
                         break;
                     case 0x0006:
@@ -140,11 +142,13 @@ namespace KzA.PcapNg.Blocks
                         IANATzName = Encoding.UTF8.GetString(data[(offset + 4)..(offset + 4 + length)]);
                         break;
                     case 0x0001:
+                        Comments ??= [];
                         Comments.Add(Encoding.UTF8.GetString(data[(offset + 4)..(offset + 4 + length)]));
                         break;
                     default:
                         var customOption = new CustomOption();
                         customOption.Parse(data[offset..], code, length);
+                        CustomOptions ??= [];
                         CustomOptions.Add(customOption);
                         break;
                 }
@@ -154,8 +158,8 @@ namespace KzA.PcapNg.Blocks
 
         public if_name? Name { get; set; }
         public if_description? Description { get; set; }
-        public List<if_IPv4addr> IPv4Addrs { get; set; } = [];
-        public List<if_IPv6addr> IPv6Addrs { get; set; } = [];
+        public List<if_IPv4addr>? IPv4Addrs { get; set; }
+        public List<if_IPv6addr>? IPv6Addrs { get; set; }
         public if_MACaddr? MACAddr { get; set; }
         public if_EUIaddr? EUIAddr { get; set; }
         public if_speed? Speed { get; set; }
@@ -170,7 +174,7 @@ namespace KzA.PcapNg.Blocks
         public if_txspeed? TxSpeed { get; set; }
         public if_rxspeed? RxSpeed { get; set; }
         public if_iana_tzname? IANATzName { get; set; }
-        public List<opt_comment> Comments { get; set; } = [];
-        public List<CustomOption> CustomOptions { get; set; } = [];
+        public List<opt_comment>? Comments { get; set; }
+        public List<CustomOption>? CustomOptions { get; set; }
     }
 }

@@ -21,11 +21,11 @@ namespace KzA.PcapNg.Blocks
             get
             {
                 var opts = new List<OptionBase>();
-                Options.Add(DnsName);
+                if (DnsName != null) Options.Add(DnsName);
                 if (DnsIP4Addr != null) opts.Add(DnsIP4Addr);
                 if (DnsIP6Addr != null) opts.Add(DnsIP6Addr);
-                opts.AddRange(Comments);
-                opts.AddRange(CustomOptions);
+                if (Comments != null) opts.AddRange(Comments);
+                if (CustomOptions != null) opts.AddRange(CustomOptions);
                 return opts;
             }
         }
@@ -101,11 +101,13 @@ namespace KzA.PcapNg.Blocks
                         DnsIP6Addr = BinaryPrimitives.ReadUInt128BigEndian(data[(offset + 4)..(offset + 20)]);
                         break;
                     case 0x0001:
+                        Comments ??= [];
                         Comments.Add(Encoding.UTF8.GetString(data[(offset + 4)..(offset + 4 + length)]));
                         break;
                     default:
                         var customOption = new CustomOption();
                         customOption.Parse(data[offset..], code, length);
+                        CustomOptions ??= [];
                         CustomOptions.Add(customOption);
                         break;
                 }
@@ -113,10 +115,10 @@ namespace KzA.PcapNg.Blocks
             }
         }
 
-        public ns_dnsname DnsName { get; set; } = ".";
+        public ns_dnsname? DnsName { get; set; }
         public ns_dnsIP4addr? DnsIP4Addr { get; set; }
         public ns_dnsIP6addr? DnsIP6Addr { get; set; }
-        public List<opt_comment> Comments { get; set; } = [];
-        public List<CustomOption> CustomOptions { get; set; } = [];
+        public List<opt_comment>? Comments { get; set; }
+        public List<CustomOption>? CustomOptions { get; set; }
     }
 }

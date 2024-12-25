@@ -29,8 +29,8 @@ namespace KzA.PcapNg.Blocks
                 if (FilterAccept != null) opts.Add(FilterAccept);
                 if (OSDrop != null) opts.Add(OSDrop);
                 if (UsrDeliv != null) opts.Add(UsrDeliv);
-                opts.AddRange(Comments);
-                opts.AddRange(CustomOptions);
+                if (Comments != null) opts.AddRange(Comments);
+                if (CustomOptions != null) opts.AddRange(CustomOptions);
                 return opts;
             }
         }
@@ -98,11 +98,13 @@ namespace KzA.PcapNg.Blocks
                         UsrDeliv = endian ? BinaryPrimitives.ReadUInt64LittleEndian(data[(offset + 4)..]) : BinaryPrimitives.ReadUInt64BigEndian(data[(offset + 4)..]);
                         break;
                     case 0x0001:
+                        Comments ??= [];
                         Comments.Add(Encoding.UTF8.GetString(data[(offset + 4)..(offset + 4 + length)]));
                         break;
                     default:
                         var customOption = new CustomOption();
                         customOption.Parse(data[offset..], code, length);
+                        CustomOptions ??= [];
                         CustomOptions.Add(customOption);
                         break;
                 }
@@ -117,7 +119,7 @@ namespace KzA.PcapNg.Blocks
         public isb_filteraccept? FilterAccept { get; set; }
         public isb_osdrop? OSDrop { get; set; }
         public isb_usrdeliv? UsrDeliv { get; set; }
-        public List<opt_comment> Comments { get; set; } = [];
-        public List<CustomOption> CustomOptions { get; set; } = [];
+        public List<opt_comment>? Comments { get; set; }
+        public List<CustomOption>? CustomOptions { get; set; }
     }
 }

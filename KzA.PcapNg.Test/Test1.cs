@@ -1,5 +1,6 @@
 ﻿using KzA.PcapNg.Blocks;
 using KzA.PcapNg.DataTypes;
+using System.Runtime.InteropServices;
 
 namespace KzA.PcapNg.Test
 {
@@ -53,16 +54,21 @@ namespace KzA.PcapNg.Test
             // If last two blocks are correct, assuming the rest are correct :)
             Assert.IsTrue(pcapng.Sections[0].EnhancedPackets[9].TimestampUpper == 403989);
             Assert.IsTrue(pcapng.Sections[0].EnhancedPackets[9].TimestampLower == 1805473145);
-            Assert.IsTrue(pcapng.Sections[0].InterfaceStatistics[0].Comments[0].StringValue == "Counters provided by dumpcap");
+            Assert.IsTrue(pcapng.Sections[0].InterfaceStatistics[0].Comments![0].StringValue == "Counters provided by dumpcap");
         }
 
         // Large file memory test
         [TestMethod]
         public void TestFileRead1()
         {
-            var pcapng = new PcapNg();
+            var pcapng = new PcapNg(true);
             pcapng.ReadFile(@"..\..\..\TestCap\Input1.large.pcapng");
-
+            var data = MemoryMarshal.AsBytes(new Span<uint>(pcapng.Sections[0].EnhancedPackets[0].PacketData));
+            foreach (var b in data)
+            {
+                Console.Write(b.ToString("X2"));
+            }
+            pcapng.Dispose();
         }
     }
 }

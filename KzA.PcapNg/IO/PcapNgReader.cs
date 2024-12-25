@@ -14,18 +14,20 @@ namespace KzA.PcapNg.IO
         private readonly BinaryReader _reader;
         private bool disposedValue;
         private bool currentEndian;
+        private bool lazyLoadMode;
 
         public int PeekChar() => _reader.PeekChar();
 
-        public PcapNgReader(string path)
+        public PcapNgReader(string path, bool lazyLoadMode)
         {
             _stream = File.OpenRead(path);
             _reader = new(_stream);
+            this.lazyLoadMode = lazyLoadMode;
         }
 
         public Section ReadSection()
         {
-            var section = new Section();
+            var section = lazyLoadMode ? new Section(_stream) : new Section();
             section.Header.Parse(_reader);
             currentEndian = section.Header.LittleEndian;
             bool reachedNextSection = false;
@@ -51,7 +53,7 @@ namespace KzA.PcapNg.IO
                         section.InterfaceStatistics.Add(isb);
                         break;
                     case 0x00000006:
-                        var epb = new EnhancedPacketBlock();
+                        var epb = lazyLoadMode ? new EnhancedPacketBlock(section) : new EnhancedPacketBlock();
                         epb.Parse(buffer, length, currentEndian);
                         section.EnhancedPackets.Add(epb);
                         break;
@@ -60,7 +62,6 @@ namespace KzA.PcapNg.IO
                         break;
                 }
             }
-
             return section;
         }
 
@@ -79,12 +80,13 @@ namespace KzA.PcapNg.IO
 
         protected virtual void Dispose(bool disposing)
         {
+            // If lazyLoadMode is true, the stream is managed by the PcapNg object
+            if (lazyLoadMode) return;
             if (!disposedValue)
             {
                 if (disposing)
                 {
                     _reader.Dispose();
-                    _stream.Dispose();
                 }
 
                 disposedValue = true;

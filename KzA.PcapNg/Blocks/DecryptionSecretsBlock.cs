@@ -22,8 +22,9 @@ namespace KzA.PcapNg.Blocks
         {
             get
             {
-                var opts = Comments.Cast<OptionBase>().ToList();
-                opts.AddRange(CustomOptions);
+                var opts = new List<OptionBase>();
+                if (Comments != null) opts.AddRange(Comments);
+                if (CustomOptions != null) opts.AddRange(CustomOptions);
                 return opts;
             }
         }
@@ -74,11 +75,13 @@ namespace KzA.PcapNg.Blocks
                         reachedEnd = true;
                         break;
                     case 0x0001:
+                        Comments ??= [];
                         Comments.Add(Encoding.UTF8.GetString(data[(offset + 4)..(offset + 4 + length)]));
                         break;
                     default:
                         var customOption = new CustomOption();
                         customOption.Parse(data[offset..], code, length);
+                        CustomOptions ??= [];
                         CustomOptions.Add(customOption);
                         break;
                 }
@@ -87,7 +90,7 @@ namespace KzA.PcapNg.Blocks
 
         }
 
-        public List<opt_comment> Comments { get; set; } = [];
-        public List<CustomOption> CustomOptions { get; set; } = [];
+        public List<opt_comment>? Comments { get; set; }
+        public List<CustomOption>? CustomOptions { get; set; }
     }
 }

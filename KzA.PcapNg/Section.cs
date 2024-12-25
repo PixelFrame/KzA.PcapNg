@@ -10,12 +10,25 @@ namespace KzA.PcapNg
 {
     public class Section
     {
+        public bool LazyDataLoad { get; private set; } = false;
+        internal readonly Stream? Stream;
         public SectionHeaderBlock Header { get; } = new();
         public List<InterfaceDescriptionBlock> Interfaces { get; } = [];
         public List<EnhancedPacketBlock> EnhancedPackets { get; } = [];
         public List<SimplePacketBlock> SimplePackets { get; } = [];
         public List<NameResolutionBlock> NameResolutions { get; } = [];
         public List<InterfaceStatisticsBlock> InterfaceStatistics { get; } = [];
+
+        public Section() { }
+        public Section(Stream stream)
+        {
+            if (!stream.CanSeek)
+            {
+                throw new InvalidOperationException("Stream must be seekable for lazy loading");
+            }
+            LazyDataLoad = true;
+            Stream = stream;
+        }
 
         public void AutoGenerateIsb(bool SkipZeroPacketIf = true, bool SuppressComment = false)
         {

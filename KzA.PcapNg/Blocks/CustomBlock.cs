@@ -43,7 +43,8 @@ namespace KzA.PcapNg.Blocks
 
         public void Parse(ReadOnlySpan<byte> data, uint totalLen, bool endian)
         {
-            throw new NotImplementedException();
+            PrivateEnterpriseNumber = endian ? BinaryPrimitives.ReadUInt32LittleEndian(data[8..]) : BinaryPrimitives.ReadUInt32BigEndian(data[8..]);
+            // Unable to implement further as we cannot tell where is the end of CustomData...
         }
     }
 }

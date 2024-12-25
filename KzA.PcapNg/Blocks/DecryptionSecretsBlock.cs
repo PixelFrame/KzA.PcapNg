@@ -1,6 +1,8 @@
 ﻿using KzA.PcapNg.Blocks.Options;
+using KzA.PcapNg.Helper;
 using System;
 using System.Buffers.Binary;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -20,7 +22,9 @@ namespace KzA.PcapNg.Blocks
         {
             get
             {
-                return Comments.Cast<OptionBase>().ToList();
+                var opts = Comments.Cast<OptionBase>().ToList();
+                opts.AddRange(CustomOptions);
+                return opts;
             }
         }
         private uint opt_endofopt => 0;
@@ -51,9 +55,39 @@ namespace KzA.PcapNg.Blocks
 
         public void Parse(ReadOnlySpan<byte> data, uint totalLen, bool endian)
         {
-            throw new NotImplementedException();
+            SecretsType = endian ? BinaryPrimitives.ReadUInt32BigEndian(data[8..]) : BinaryPrimitives.ReadUInt32LittleEndian(data[8..]);
+            SecretsLength = endian ? BinaryPrimitives.ReadUInt32BigEndian(data[12..]) : BinaryPrimitives.ReadUInt32LittleEndian(data[12..]);
+            SecretsData = new uint[Misc.DwordPaddedDwLength(SecretsLength)];
+            var sdataSpan = new Span<uint>(SecretsData);
+            var sdataBinSpan = MemoryMarshal.AsBytes(sdataSpan);
+            data[16..(int)(16 + SecretsLength)].CopyTo(sdataBinSpan);
+
+            var offset = 16 + Misc.DwordPaddedLength(SecretsLength);
+            var reachedEnd = false;
+            while (offset < totalLen - 4 && !reachedEnd)
+            {
+                var code = endian ? BinaryPrimitives.ReadUInt16LittleEndian(data[offset..]) : BinaryPrimitives.ReadUInt16BigEndian(data[offset..]);
+                var length = endian ? BinaryPrimitives.ReadUInt16LittleEndian(data[(offset + 2)..]) : BinaryPrimitives.ReadUInt16BigEndian(data[(offset + 2)..]);
+                switch (code)
+                {
+                    case 0x0000:
+                        reachedEnd = true;
+                        break;
+                    case 0x0001:
+                        Comments.Add(Encoding.UTF8.GetString(data[(offset + 4)..(offset + 4 + length)]));
+                        break;
+                    default:
+                        var customOption = new CustomOption();
+                        customOption.Parse(data[offset..], code, length);
+                        CustomOptions.Add(customOption);
+                        break;
+                }
+                offset += Misc.DwordPaddedLength(length) + 4;
+            }
+
         }
 
         public List<opt_comment> Comments { get; set; } = [];
+        public List<CustomOption> CustomOptions { get; set; } = [];
     }
 }

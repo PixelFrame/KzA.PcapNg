@@ -30,6 +30,7 @@ namespace KzA.PcapNg.Blocks
                 if (OSDrop != null) opts.Add(OSDrop);
                 if (UsrDeliv != null) opts.Add(UsrDeliv);
                 opts.AddRange(Comments);
+                opts.AddRange(CustomOptions);
                 return opts;
             }
         }
@@ -99,6 +100,11 @@ namespace KzA.PcapNg.Blocks
                     case 0x0001:
                         Comments.Add(Encoding.UTF8.GetString(data[(offset + 4)..(offset + 4 + length)]));
                         break;
+                    default:
+                        var customOption = new CustomOption();
+                        customOption.Parse(data[offset..], code, length);
+                        CustomOptions.Add(customOption);
+                        break;
                 }
                 offset += Misc.DwordPaddedLength(length) + 4;
             }
@@ -112,5 +118,6 @@ namespace KzA.PcapNg.Blocks
         public isb_osdrop? OSDrop { get; set; }
         public isb_usrdeliv? UsrDeliv { get; set; }
         public List<opt_comment> Comments { get; set; } = [];
+        public List<CustomOption> CustomOptions { get; set; } = [];
     }
 }

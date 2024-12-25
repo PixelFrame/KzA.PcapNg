@@ -26,5 +26,16 @@ namespace KzA.PcapNg.Blocks.Options
             valBinSpan.CopyTo(binSpan[4..]);
             return Size;
         }
+
+        // Should only be called by CustomOption
+        internal virtual void Parse(ReadOnlySpan<byte> data, ushort code, ushort length)
+        {
+            Code = code;
+            Length = length;
+            Value = new uint[Misc.DwordPaddedDwLength(length)];
+            var valueSpan = new Span<uint>(Value);
+            var valueBinSpan = MemoryMarshal.AsBytes(valueSpan);
+            data[..length].CopyTo(valueBinSpan);
+        }
     }
 }

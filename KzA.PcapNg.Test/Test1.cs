@@ -41,18 +41,28 @@ namespace KzA.PcapNg.Test
             var pcapng = new PcapNg();
             pcapng.Sections.Add(section);
 
-            pcapng.WriteAllSections("E:\\Temp\\test.pcapng");
+            pcapng.WriteAllSections(@"..\..\..\TestCap\Generated0.pcapng");
+            // TODO: Validate the file with tshark
         }
 
         [TestMethod]
         public void TestFileRead0()
         {
             var pcapng = new PcapNg();
-            pcapng.ReadFile("E:\\Temp\\1.pcapng");
+            pcapng.ReadFile(@"..\..\..\TestCap\Input0.pcapng");
             // If last two blocks are correct, assuming the rest are correct :)
-            Assert.IsTrue(pcapng.Sections[0].EnhancedPackets[200].TimestampUpper == 403723);
-            Assert.IsTrue(pcapng.Sections[0].EnhancedPackets[200].TimestampLower == 3557021722);
+            Assert.IsTrue(pcapng.Sections[0].EnhancedPackets[9].TimestampUpper == 403989);
+            Assert.IsTrue(pcapng.Sections[0].EnhancedPackets[9].TimestampLower == 1805473145);
             Assert.IsTrue(pcapng.Sections[0].InterfaceStatistics[0].Comments[0].StringValue == "Counters provided by dumpcap");
+        }
+
+        // Large file memory test
+        [TestMethod]
+        public void TestFileRead1()
+        {
+            var pcapng = new PcapNg();
+            pcapng.ReadFile(@"..\..\..\TestCap\Input1.large.pcapng");
+
         }
     }
 }

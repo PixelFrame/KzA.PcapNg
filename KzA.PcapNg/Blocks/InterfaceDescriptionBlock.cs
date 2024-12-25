@@ -31,6 +31,9 @@ namespace KzA.PcapNg.Blocks
                 if (EUIAddr != null) list.Add(EUIAddr);
                 if (Speed != null) list.Add(Speed);
                 if (TsResol != null) list.Add(TsResol);
+#pragma warning disable CS0618 // Type or member is obsolete
+                if (TZone != null) list.Add(TZone);
+#pragma warning restore CS0618 // Type or member is obsolete
                 if (Filter != null) list.Add(Filter);
                 if (OS != null) list.Add(OS);
                 if (FcsLen != null) list.Add(FcsLen);
@@ -40,6 +43,7 @@ namespace KzA.PcapNg.Blocks
                 if (RxSpeed != null) list.Add(RxSpeed);
                 if (IANATzName != null) list.Add(IANATzName);
                 list.AddRange(Comments);
+                list.AddRange(CustomOptions);
                 return list;
             }
         }
@@ -106,6 +110,11 @@ namespace KzA.PcapNg.Blocks
                     case 0x0009:
                         TsResol = data[offset + 4];
                         break;
+                    case 0x000A:
+#pragma warning disable CS0618 // Type or member is obsolete
+                        TZone = endian ? BinaryPrimitives.ReadUInt32LittleEndian(data[(offset + 4)..]) : BinaryPrimitives.ReadUInt32BigEndian(data[(offset + 4)..]);
+#pragma warning restore CS0618 // Type or member is obsolete
+                        break;
                     case 0x000B:
                         Filter = (data[offset + 4], Encoding.UTF8.GetString(data[(offset + 5)..(offset + 4 + length)]));
                         break;
@@ -133,6 +142,11 @@ namespace KzA.PcapNg.Blocks
                     case 0x0001:
                         Comments.Add(Encoding.UTF8.GetString(data[(offset + 4)..(offset + 4 + length)]));
                         break;
+                    default:
+                        var customOption = new CustomOption();
+                        customOption.Parse(data[offset..], code, length);
+                        CustomOptions.Add(customOption);
+                        break;
                 }
                 offset += Misc.DwordPaddedLength(length) + 4;
             }
@@ -157,5 +171,6 @@ namespace KzA.PcapNg.Blocks
         public if_rxspeed? RxSpeed { get; set; }
         public if_iana_tzname? IANATzName { get; set; }
         public List<opt_comment> Comments { get; set; } = [];
+        public List<CustomOption> CustomOptions { get; set; } = [];
     }
 }

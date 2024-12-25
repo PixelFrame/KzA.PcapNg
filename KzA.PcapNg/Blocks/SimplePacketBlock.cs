@@ -46,7 +46,7 @@ namespace KzA.PcapNg.Blocks
         public void Parse(ReadOnlySpan<byte> data, uint totalLen, bool endian = true)
         {
             OriginalPacketLength = endian ? BinaryPrimitives.ReadUInt32LittleEndian(data[8..]) : BinaryPrimitives.ReadUInt32BigEndian(data[8..]);
-            var packetDataLength = (data.Length - 16) / 4;
+            var packetDataLength = (totalLen - 16) / 4;
             PacketData = new uint[packetDataLength];
             var pdataSpan = new Span<uint>(PacketData);
             var pdataBinSpan = MemoryMarshal.AsBytes(pdataSpan);

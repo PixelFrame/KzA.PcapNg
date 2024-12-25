@@ -36,6 +36,7 @@ namespace KzA.PcapNg.Blocks
                 opts.AddRange(VerDict);
                 if (PidTid != null) opts.Add(PidTid);
                 opts.AddRange(Comments);
+                opts.AddRange(CustomOptions);
                 return opts;
             }
         }
@@ -91,7 +92,7 @@ namespace KzA.PcapNg.Blocks
             var pdataSpan = new Span<uint>(PacketData);
             var pdataBinSpan = MemoryMarshal.AsBytes(pdataSpan);
             data[28..(int)(28 + CapturedPacketLength)].CopyTo(pdataBinSpan);
-            var offset = 24 + Misc.DwordPaddedLength(CapturedPacketLength);
+            var offset = 28 + Misc.DwordPaddedLength(CapturedPacketLength);
             var reachedEnd = false;
             while (offset < totalLen - 4 && !reachedEnd)
             {
@@ -127,6 +128,11 @@ namespace KzA.PcapNg.Blocks
                     case 0x0001:
                         Comments.Add(Encoding.UTF8.GetString(data[(offset + 4)..(offset + 4 + length)]));
                         break;
+                    default:
+                        var customOption = new CustomOption();
+                        customOption.Parse(data[offset..], code, length);
+                        CustomOptions.Add(customOption);
+                        break;
                 }
                 offset += Misc.DwordPaddedLength(length) + 4;
             }
@@ -146,5 +152,6 @@ namespace KzA.PcapNg.Blocks
         public List<epb_verdict> VerDict { get; set; } = [];
         public epb_processid_threadid? PidTid { get; set; } = null;
         public List<opt_comment> Comments { get; set; } = [];
+        public List<CustomOption> CustomOptions { get; set; } = [];
     }
 }

@@ -9,7 +9,6 @@ namespace KzA.PcapNg.IO
 {
     public class PcapNgWriter : IDisposable
     {
-        private readonly Stream _stream;
         private readonly BinaryWriter _writer;
         private bool disposedValue;
 
@@ -20,8 +19,7 @@ namespace KzA.PcapNg.IO
                 if(removeExisting) File.Delete(path);
                 else throw new IOException("File already exists");
             }
-            _stream = File.Open(path, FileMode.CreateNew);
-            _writer = new(_stream);
+            _writer = new(File.Open(path, FileMode.CreateNew));
         }
 
         public void Write(IBlock block)
@@ -49,7 +47,6 @@ namespace KzA.PcapNg.IO
                 if (disposing)
                 {
                     _writer.Dispose();
-                    _stream.Dispose();
                 }
                 disposedValue = true;
             }

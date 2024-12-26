@@ -37,6 +37,12 @@ namespace KzA.PcapNg.Blocks
         }
         public uint TotalLength2 => TotalLength;
 
+        public SimplePacketBlock() { }
+        public SimplePacketBlock(Section section)
+        {
+            this.section = section;
+        }
+
         public void WritePacketData(byte[] data, uint originalLength = 0)
         {
             var capturedPacketLength = (uint)data.Length;
@@ -96,7 +102,7 @@ namespace KzA.PcapNg.Blocks
 
         internal void UnloadData()
         {
-            packetData = [];
+            if (section != null) packetData = [];
         }
     }
 }

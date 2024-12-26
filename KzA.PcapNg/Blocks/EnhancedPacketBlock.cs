@@ -31,7 +31,7 @@ namespace KzA.PcapNg.Blocks
         {
             get
             {
-                if(!IsDataLoaded)
+                if (!IsDataLoaded)
                 {
                     LoadData();
                 }
@@ -56,7 +56,7 @@ namespace KzA.PcapNg.Blocks
                 if (PidTid != null) opts.Add(PidTid);
                 if (Comments != null) opts.AddRange(Comments);
                 if (CustomOptions != null) opts.AddRange(CustomOptions);
-                if(opts.Count > 0) opts.Add(Misc.opt_endofopt);
+                if (opts.Count > 0) opts.Add(Misc.opt_endofopt);
                 return opts;
             }
         }
@@ -194,7 +194,7 @@ namespace KzA.PcapNg.Blocks
 
         internal void UnloadData()
         {
-            packetData = [];
+            if (section != null) packetData = [];
         }
 
         public epb_flags? Flags = null;

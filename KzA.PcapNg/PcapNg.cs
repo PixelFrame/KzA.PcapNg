@@ -9,6 +9,7 @@ namespace KzA.PcapNg
         public List<Section> Sections { get; } = [];
         private bool lazyLoadMode = false;
         public bool LazyLoadMode => lazyLoadMode;
+        internal Stream? Stream;
         private bool disposedValue;
 
         public PcapNg(bool lazyLoadMode = false)
@@ -23,7 +24,7 @@ namespace KzA.PcapNg
             if (releaseStream && Sections.Count > 0) Sections[0].Stream?.Dispose();
         }
 
-        public void WriteAllSections(string path)
+        public void WriteFile(string path)
         {
             using var writer = new PcapNgWriter(path);
             foreach (var section in Sections)
@@ -69,12 +70,34 @@ namespace KzA.PcapNg
 
         public void ReadFile(string path)
         {
-            if (Sections.Count > 0)
+            if (Sections.Count > 0 || Stream != null)
             {
                 throw new InvalidOperationException("File already read, create a new instance for another file");
             }
+            Stream = File.OpenRead(path);
+            using var reader = lazyLoadMode ? new PcapNgReader(Stream, this) : new PcapNgReader(Stream, null);
+            while (reader.PeekChar() != -1)
+            {
+                Sections.Add(reader.ReadSection());
+            }
+        }
 
-            using var reader = new PcapNgReader(path, lazyLoadMode);
+        public void ReadStream(Stream stream)
+        {
+            if (Sections.Count > 0 || Stream != null)
+            {
+                throw new InvalidOperationException("Stream already read, create a new instance for another stream");
+            }
+            if (!stream.CanSeek)
+            {
+                throw new InvalidOperationException("Stream must be seekable");
+            }
+            if (!stream.CanRead)
+            {
+                throw new InvalidOperationException("Stream must be readable");
+            }
+            Stream = stream;
+            using var reader = lazyLoadMode ? new PcapNgReader(Stream, this) : new PcapNgReader(Stream, null);
             while (reader.PeekChar() != -1)
             {
                 Sections.Add(reader.ReadSection());
@@ -87,8 +110,7 @@ namespace KzA.PcapNg
             {
                 if (disposing)
                 {
-                    // Theoretically, all sections should use the same stream
-                    if (Sections.Count > 0) Sections[0].Stream?.Dispose();
+                    Stream?.Dispose();
                 }
                 disposedValue = true;
             }

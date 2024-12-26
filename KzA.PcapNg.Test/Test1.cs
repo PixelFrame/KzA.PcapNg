@@ -43,7 +43,7 @@ namespace KzA.PcapNg.Test
             var pcapng = new PcapNg();
             pcapng.Sections.Add(section);
 
-            pcapng.WriteAllSections(@"..\..\..\TestCap\Generated0.pcapng");
+            pcapng.WriteFile(@"..\..\..\TestCap\Generated0.pcapng");
             // TODO: Validate the file with tshark
         }
 
@@ -127,7 +127,7 @@ namespace KzA.PcapNg.Test
         {
             var pcapng = new PcapNg(true);
             pcapng.ReadFile(@"..\..\..\TestCap\Input1.large.pcapng");
-            pcapng.WriteAllSections(@"..\..\..\TestCap\Relog1.large.pcapng");
+            pcapng.WriteFile(@"..\..\..\TestCap\Relog1.large.pcapng");
         }
     }
 }

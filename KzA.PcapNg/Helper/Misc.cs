@@ -1,4 +1,5 @@
-﻿using System;
+﻿using KzA.PcapNg.Blocks.Options;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,5 +18,8 @@ namespace KzA.PcapNg.Helper
         {
             return (N + 3) >> 2;
         }
+
+        // Global static endofopt object to avoid creating new objects
+        internal static opt_endofopt opt_endofopt = new();
     }
 }

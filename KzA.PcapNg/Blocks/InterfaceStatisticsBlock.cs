@@ -13,7 +13,7 @@ namespace KzA.PcapNg.Blocks
     public class InterfaceStatisticsBlock : IBlock
     {
         public uint Type => 0x00000005;
-        public uint TotalLength => (uint)(28 + Options.Sum(o => o.Size));
+        public uint TotalLength => (uint)(24 + Options.Sum(o => o.Size));
         public uint InterfaceID { get; set; } = 0;
         public uint TimestampUpper { get; set; } = 0;
         public uint TimestampLower { get; set; } = 0;
@@ -31,10 +31,10 @@ namespace KzA.PcapNg.Blocks
                 if (UsrDeliv != null) opts.Add(UsrDeliv);
                 if (Comments != null) opts.AddRange(Comments);
                 if (CustomOptions != null) opts.AddRange(CustomOptions);
+                if (opts.Count > 0) opts.Add(Misc.opt_endofopt);
                 return opts;
             }
         }
-        private uint opt_endofopt => 0;
         public uint TotalLength2 => TotalLength;
 
         public byte[] GetBytes()
@@ -53,8 +53,7 @@ namespace KzA.PcapNg.Blocks
                 offset += option.WriteBytes(binSpan[offset..]);
             }
 
-            BinaryPrimitives.WriteUInt32LittleEndian(binSpan[offset..], opt_endofopt);
-            BinaryPrimitives.WriteUInt32LittleEndian(binSpan[(offset + 4)..], TotalLength2);
+            BinaryPrimitives.WriteUInt32LittleEndian(binSpan[offset..], TotalLength2);
             return bin;
         }
 

@@ -14,7 +14,7 @@ namespace KzA.PcapNg.Blocks
     public class InterfaceDescriptionBlock : IBlock
     {
         public uint Type => 0x00000001;
-        public uint TotalLength => (uint)(24 + Options.Sum(o => o.Size));
+        public uint TotalLength => (uint)(20 + Options.Sum(o => o.Size));
         public LinkType LinkType { get; set; } = LinkType.LINKTYPE_ETHERNET;
         private ushort Reserved => 0;
         public uint SnapLen { get; set; } = 0;
@@ -22,32 +22,32 @@ namespace KzA.PcapNg.Blocks
         {
             get
             {
-                var list = new List<OptionBase>();
-                if (Name != null) list.Add(Name);
-                if (Description != null) list.Add(Description);
-                if (IPv4Addrs != null) list.AddRange(IPv4Addrs);
-                if (IPv6Addrs != null) list.AddRange(IPv6Addrs);
-                if (MACAddr != null) list.Add(MACAddr);
-                if (EUIAddr != null) list.Add(EUIAddr);
-                if (Speed != null) list.Add(Speed);
-                if (TsResol != null) list.Add(TsResol);
+                var opts = new List<OptionBase>();
+                if (Name != null) opts.Add(Name);
+                if (Description != null) opts.Add(Description);
+                if (IPv4Addrs != null) opts.AddRange(IPv4Addrs);
+                if (IPv6Addrs != null) opts.AddRange(IPv6Addrs);
+                if (MACAddr != null) opts.Add(MACAddr);
+                if (EUIAddr != null) opts.Add(EUIAddr);
+                if (Speed != null) opts.Add(Speed);
+                if (TsResol != null) opts.Add(TsResol);
 #pragma warning disable CS0618 // Type or member is obsolete
-                if (TZone != null) list.Add(TZone);
+                if (TZone != null) opts.Add(TZone);
 #pragma warning restore CS0618 // Type or member is obsolete
-                if (Filter != null) list.Add(Filter);
-                if (OS != null) list.Add(OS);
-                if (FcsLen != null) list.Add(FcsLen);
-                if (TsOffset != null) list.Add(TsOffset);
-                if (Hardware != null) list.Add(Hardware);
-                if (TxSpeed != null) list.Add(TxSpeed);
-                if (RxSpeed != null) list.Add(RxSpeed);
-                if (IANATzName != null) list.Add(IANATzName);
-                if (Comments != null) list.AddRange(Comments);
-                if (CustomOptions != null) list.AddRange(CustomOptions);
-                return list;
+                if (Filter != null) opts.Add(Filter);
+                if (OS != null) opts.Add(OS);
+                if (FcsLen != null) opts.Add(FcsLen);
+                if (TsOffset != null) opts.Add(TsOffset);
+                if (Hardware != null) opts.Add(Hardware);
+                if (TxSpeed != null) opts.Add(TxSpeed);
+                if (RxSpeed != null) opts.Add(RxSpeed);
+                if (IANATzName != null) opts.Add(IANATzName);
+                if (Comments != null) opts.AddRange(Comments);
+                if (CustomOptions != null) opts.AddRange(CustomOptions);
+                if (opts.Count > 0) opts.Add(new opt_endofopt());
+                return opts;
             }
         }
-        private uint opt_endofopt => 0;
         public uint TotalLength2 => TotalLength;
 
         public byte[] GetBytes()
@@ -66,8 +66,7 @@ namespace KzA.PcapNg.Blocks
                 offset += option.WriteBytes(binSpan[offset..]);
             }
 
-            BinaryPrimitives.WriteUInt32LittleEndian(binSpan[offset..], opt_endofopt);
-            BinaryPrimitives.WriteUInt32LittleEndian(binSpan[(offset + 4)..], TotalLength2);
+            BinaryPrimitives.WriteUInt32LittleEndian(binSpan[offset..], TotalLength2);
             return bin;
         }
 

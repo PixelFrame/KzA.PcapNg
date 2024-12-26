@@ -13,7 +13,7 @@ namespace KzA.PcapNg.Blocks
     public class SectionHeaderBlock : IBlock
     {
         public uint Type => 0x0A0D0D0A;
-        public uint TotalLength => (uint)(32 + Options.Sum(o => o.Size));
+        public uint TotalLength => (uint)(28 + Options.Sum(o => o.Size));
         public uint BOM => 0x1A2B3C4D;
         public bool LittleEndian { get; private set; } = true;
         public ushort MajorVersion => 1;
@@ -29,10 +29,10 @@ namespace KzA.PcapNg.Blocks
                 if (UserAppl != null) options.Add(UserAppl);
                 if (Comments != null) options.AddRange(Comments);
                 if (CustomOptions != null) options.AddRange(CustomOptions);
+                if (options.Count > 0) options.Add(Misc.opt_endofopt);
                 return options;
             }
         }
-        private uint opt_endofopt => 0;
         public uint TotalLength2 => TotalLength;
 
         public byte[] GetBytes()
@@ -52,8 +52,7 @@ namespace KzA.PcapNg.Blocks
                 offset += option.WriteBytes(binSpan[offset..]);
             }
 
-            BinaryPrimitives.WriteUInt32LittleEndian(binSpan[offset..], opt_endofopt);
-            BinaryPrimitives.WriteUInt32LittleEndian(binSpan[(offset + 4)..], TotalLength2);
+            BinaryPrimitives.WriteUInt32LittleEndian(binSpan[offset..], TotalLength2);
             return bin;
         }
 

@@ -76,6 +76,12 @@ namespace KzA.PcapNg
             }
         }
 
+        public void LoadAllPackets()
+        {
+            EnhancedPackets.ForEach(p => p.LoadData());
+            SimplePackets.ForEach(p => p.LoadData());
+        }
+
         public void UnloadAllPackets(bool performGC = true)
         {
             EnhancedPackets.ForEach(p => p.UnloadData());

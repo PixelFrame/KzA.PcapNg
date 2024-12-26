@@ -121,5 +121,13 @@ namespace KzA.PcapNg.Test
             Assert.IsTrue(pcapng.Sections[0].DecryptionSecrets[0].SecretsLength == 13392);
             Assert.IsTrue(pcapng.Sections[0].DecryptionSecrets[0].SecretsType == SecretsType.TLSKeyLog);
         }
+
+        [TestMethod]
+        public void Relog()
+        {
+            var pcapng = new PcapNg(true);
+            pcapng.ReadFile(@"..\..\..\TestCap\Input1.large.pcapng");
+            pcapng.WriteAllSections(@"..\..\..\TestCap\Relog1.large.pcapng");
+        }
     }
 }

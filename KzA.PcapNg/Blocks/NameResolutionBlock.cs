@@ -13,7 +13,7 @@ namespace KzA.PcapNg.Blocks
     public class NameResolutionBlock : IBlock
     {
         public uint Type => 0x00000004;
-        public uint TotalLength => (uint)(32 + Options.Sum(o => o.Size) + Records.Sum(r => r.Size));
+        public uint TotalLength => (uint)(16 + Options.Sum(o => o.Size) + Records.Sum(r => r.Size));
         public List<NameResolutionRecord> Records { get; } = [];
         private uint nrb_record_end => 0;
         public List<OptionBase> Options
@@ -26,10 +26,10 @@ namespace KzA.PcapNg.Blocks
                 if (DnsIP6Addr != null) opts.Add(DnsIP6Addr);
                 if (Comments != null) opts.AddRange(Comments);
                 if (CustomOptions != null) opts.AddRange(CustomOptions);
+                if (opts.Count > 0) opts.Add(Misc.opt_endofopt);
                 return opts;
             }
         }
-        private uint opt_endofopt => 0;
         public uint TotalLength2 => TotalLength;
 
         public byte[] GetBytes()
@@ -53,8 +53,7 @@ namespace KzA.PcapNg.Blocks
                 offset += option.WriteBytes(binSpan[offset..]);
             }
 
-            BinaryPrimitives.WriteUInt32LittleEndian(binSpan[offset..], opt_endofopt);
-            BinaryPrimitives.WriteUInt32LittleEndian(binSpan[(offset + 4)..], TotalLength2);
+            BinaryPrimitives.WriteUInt32LittleEndian(binSpan[offset..], TotalLength2);
             return bin;
         }
 

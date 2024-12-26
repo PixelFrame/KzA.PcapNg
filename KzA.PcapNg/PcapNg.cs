@@ -1,4 +1,5 @@
 ﻿using KzA.PcapNg.Blocks;
+using KzA.PcapNg.Helper;
 using KzA.PcapNg.IO;
 
 namespace KzA.PcapNg
@@ -6,12 +7,20 @@ namespace KzA.PcapNg
     public class PcapNg : IDisposable
     {
         public List<Section> Sections { get; } = [];
-        private bool LazyLoadMode = false;
+        private bool lazyLoadMode = false;
+        public bool LazyLoadMode => lazyLoadMode;
         private bool disposedValue;
 
         public PcapNg(bool lazyLoadMode = false)
         {
-            LazyLoadMode = lazyLoadMode;
+            this.lazyLoadMode = lazyLoadMode;
+        }
+
+        public void LoadNow(bool releaseStream)
+        {
+            lazyLoadMode = false;
+            Sections.ForEach(s => s.LoadAllPackets());
+            if (releaseStream && Sections.Count > 0) Sections[0].Stream?.Dispose();
         }
 
         public void WriteAllSections(string path)
@@ -22,8 +31,36 @@ namespace KzA.PcapNg
                 writer.Write(section.Header);
                 writer.WriteAll(section.Interfaces);
                 writer.WriteAll(section.DecryptionSecrets);
-                writer.WriteAll(section.EnhancedPackets);
-                writer.WriteAll(section.SimplePackets);
+                if (!lazyLoadMode)
+                {
+                    writer.WriteAll(section.EnhancedPackets);
+                    writer.WriteAll(section.SimplePackets);
+                }
+                else
+                {
+                    var cnt = 0;
+                    while (cnt < section.EnhancedPackets.Count)
+                    {
+                        var loadedPackets = section.EnhancedPackets.GetLoadedPackets(cnt, 100000);
+                        writer.WriteAll(loadedPackets);
+                        cnt += 100000;
+                        foreach (var pkt in loadedPackets)
+                        {
+                            pkt.UnloadData();
+                        }
+                    }
+                    cnt = 0;
+                    while (cnt < section.SimplePackets.Count)
+                    {
+                        var loadedPackets = section.SimplePackets.GetLoadedPackets(cnt, 100000);
+                        writer.WriteAll(loadedPackets);
+                        cnt += 100000;
+                        foreach (var pkt in loadedPackets)
+                        {
+                            pkt.UnloadData();
+                        }
+                    }
+                }
                 writer.WriteAll(section.NameResolutions);
                 writer.WriteAll(section.InterfaceStatistics);
                 writer.WriteAll(section.CustomBlocks);
@@ -32,7 +69,12 @@ namespace KzA.PcapNg
 
         public void ReadFile(string path)
         {
-            using var reader = new PcapNgReader(path, LazyLoadMode);
+            if (Sections.Count > 0)
+            {
+                throw new InvalidOperationException("File already read, create a new instance for another file");
+            }
+
+            using var reader = new PcapNgReader(path, lazyLoadMode);
             while (reader.PeekChar() != -1)
             {
                 Sections.Add(reader.ReadSection());
@@ -45,7 +87,8 @@ namespace KzA.PcapNg
             {
                 if (disposing)
                 {
-                    Sections[0].Stream?.Dispose();
+                    // Theoretically, all sections should use the same stream
+                    if (Sections.Count > 0) Sections[0].Stream?.Dispose();
                 }
                 disposedValue = true;
             }

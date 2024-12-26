@@ -12,11 +12,10 @@ namespace KzA.PcapNg.Blocks
     public class CustomBlock : IBlock
     {
         public uint Type => 0x00000BAD;
-        public uint TotalLength => (uint)(4 * (5 + CustomData.Length) + (Options?.Sum(o => o.Size) ?? 0));
+        public uint TotalLength => (uint)(4 * (4 + CustomData.Length) + (Options?.Sum(o => o.Size) ?? 0) + ((Options?.Count > 0) ? 4 : 0));
         public uint PrivateEnterpriseNumber { get; set; } = 0;
         public uint[] CustomData { get; set; } = [];
         public List<OptionBase>? Options { get; set; }
-        private uint opt_endofopt => 0;
         public uint TotalLength2 => TotalLength;
 
         public byte[] GetBytes()
@@ -38,8 +37,13 @@ namespace KzA.PcapNg.Blocks
                     offset += option.WriteBytes(binSpan[offset..]);
                 }
             }
-            BinaryPrimitives.WriteUInt32LittleEndian(binSpan[offset..], opt_endofopt);
-            BinaryPrimitives.WriteUInt32LittleEndian(binSpan[(offset + 4)..], TotalLength2);
+
+            if (Options?.Count > 0)
+            {
+                BinaryPrimitives.WriteUInt32LittleEndian(binSpan[offset..], 0);
+                offset += 4;
+            }
+            BinaryPrimitives.WriteUInt32LittleEndian(binSpan[offset..], TotalLength2);
             return bin;
         }
 

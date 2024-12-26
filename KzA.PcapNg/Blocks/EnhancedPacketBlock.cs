@@ -19,7 +19,7 @@ namespace KzA.PcapNg.Blocks
         private long? position = 0;
 
         public uint Type => 0x00000006;
-        public uint TotalLength => (uint)(4 * (9 + PacketData.Length) + Options.Sum(o => o.Size));
+        public uint TotalLength => (uint)(4 * (8 + PacketData.Length) + Options.Sum(o => o.Size));
         public uint InterfaceID { get; set; } = 0;
         public uint TimestampUpper { get; set; } = 0;
         public uint TimestampLower { get; set; } = 0;
@@ -56,10 +56,10 @@ namespace KzA.PcapNg.Blocks
                 if (PidTid != null) opts.Add(PidTid);
                 if (Comments != null) opts.AddRange(Comments);
                 if (CustomOptions != null) opts.AddRange(CustomOptions);
+                if(opts.Count > 0) opts.Add(Misc.opt_endofopt);
                 return opts;
             }
         }
-        public uint opt_endofopt => 0;
         public uint TotalLength2 => TotalLength;
 
         public EnhancedPacketBlock() { }
@@ -101,8 +101,7 @@ namespace KzA.PcapNg.Blocks
                 offset += option.WriteBytes(binSpan[offset..]);
             }
 
-            BinaryPrimitives.WriteUInt32LittleEndian(binSpan[offset..], opt_endofopt);
-            BinaryPrimitives.WriteUInt32LittleEndian(binSpan[(offset + 4)..], TotalLength2);
+            BinaryPrimitives.WriteUInt32LittleEndian(binSpan[offset..], TotalLength2);
             return bin;
         }
 

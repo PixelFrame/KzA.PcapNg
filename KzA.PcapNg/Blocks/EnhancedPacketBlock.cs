@@ -14,7 +14,7 @@ namespace KzA.PcapNg.Blocks
 {
     public class EnhancedPacketBlock : IBlock, IComparable<EnhancedPacketBlock>
     {
-        private Section? section;
+        private readonly Section? section;
         internal bool IsDataLoaded => packetData.Length != 0;
         private long? position = 0;
 
@@ -33,15 +33,7 @@ namespace KzA.PcapNg.Blocks
             {
                 if(!IsDataLoaded)
                 {
-                    if (section == null)
-                    {
-                        throw new Exception("Packet data not loaded");
-                    }
-                    section.Stream!.Seek(position!.Value, SeekOrigin.Begin);
-                    packetData = new uint[Misc.DwordPaddedDwLength(CapturedPacketLength)];
-                    var pdataSpan = new Span<uint>(packetData);
-                    var pdataBinSpan = MemoryMarshal.AsBytes(pdataSpan);
-                    section.Stream.ReadExactly(pdataBinSpan);
+                    LoadData();
                 }
                 return packetData;
             }
@@ -186,6 +178,24 @@ namespace KzA.PcapNg.Blocks
         {
             if (other == null) return 1;
             return Timestamp.CompareTo(other.Timestamp);
+        }
+
+        internal void LoadData()
+        {
+            if (section == null)
+            {
+                throw new Exception("Cannot load data without section");
+            }
+            section.Stream!.Seek(position!.Value, SeekOrigin.Begin);
+            packetData = new uint[Misc.DwordPaddedDwLength(CapturedPacketLength)];
+            var pdataSpan = new Span<uint>(packetData);
+            var pdataBinSpan = MemoryMarshal.AsBytes(pdataSpan);
+            section.Stream.ReadExactly(pdataBinSpan);
+        }
+
+        internal void UnloadData()
+        {
+            packetData = [];
         }
 
         public epb_flags? Flags = null;

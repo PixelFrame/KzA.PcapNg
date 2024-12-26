@@ -11,10 +11,30 @@ namespace KzA.PcapNg.Blocks
 {
     public class SimplePacketBlock : IBlock
     {
+        private readonly Section? section;
+        internal bool IsDataLoaded => packetData.Length != 0;
+        private long? position = 0;
+        private uint? dwDataLength = 0;
+
         public uint Type => 0x00000003;
         public uint TotalLength => (uint)(4 * (4 + PacketData.Length));
         public uint OriginalPacketLength { get; set; } = 0;
-        public uint[] PacketData { get; set; } = [];
+        private uint[] packetData { get; set; } = [];
+        public uint[] PacketData
+        {
+            get
+            {
+                if (!IsDataLoaded)
+                {
+                    LoadData();
+                }
+                return packetData;
+            }
+            set
+            {
+                packetData = value;
+            }
+        }
         public uint TotalLength2 => TotalLength;
 
         public void WritePacketData(byte[] data, uint originalLength = 0)
@@ -46,11 +66,37 @@ namespace KzA.PcapNg.Blocks
         public void Parse(ReadOnlySpan<byte> data, uint totalLen, bool endian = true)
         {
             OriginalPacketLength = endian ? BinaryPrimitives.ReadUInt32LittleEndian(data[8..]) : BinaryPrimitives.ReadUInt32BigEndian(data[8..]);
-            var packetDataLength = (totalLen - 16) / 4;
-            PacketData = new uint[packetDataLength];
-            var pdataSpan = new Span<uint>(PacketData);
+            if (section == null)
+            {
+                var packetDataLength = (totalLen - 16) / 4;
+                packetData = new uint[packetDataLength];
+                var pdataSpan = new Span<uint>(packetData);
+                var pdataBinSpan = MemoryMarshal.AsBytes(pdataSpan);
+                data[12..(int)(totalLen - 4)].CopyTo(pdataBinSpan);
+            }
+            else
+            {
+                position = section.Stream!.Position - totalLen + 12;
+                dwDataLength = (totalLen - 16) / 4;
+            }
+        }
+
+        internal void LoadData()
+        {
+            if (section == null)
+            {
+                throw new Exception("Packet data not loaded");
+            }
+            section.Stream!.Seek(position!.Value, SeekOrigin.Begin);
+            packetData = new uint[dwDataLength!.Value];
+            var pdataSpan = new Span<uint>(packetData);
             var pdataBinSpan = MemoryMarshal.AsBytes(pdataSpan);
-            data[12..(int)(totalLen - 4)].CopyTo(pdataBinSpan);
+            section.Stream.ReadExactly(pdataBinSpan);
+        }
+
+        internal void UnloadData()
+        {
+            packetData = [];
         }
     }
 }

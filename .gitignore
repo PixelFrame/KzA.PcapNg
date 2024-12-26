@@ -362,5 +362,8 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 
+# Generated test file
+Generated*.pcapng
+
 # Large test file
 *.large.pcapng

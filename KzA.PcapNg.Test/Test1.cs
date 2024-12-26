@@ -1,5 +1,6 @@
 ﻿using KzA.PcapNg.Blocks;
 using KzA.PcapNg.DataTypes;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace KzA.PcapNg.Test
@@ -58,16 +59,56 @@ namespace KzA.PcapNg.Test
         }
 
         // Large file memory test
+        // The test file should have at least 300000 packets
         [TestMethod]
         public void TestFileRead1()
         {
             var pcapng = new PcapNg(true);
+            Console.WriteLine($"Initial Memory: {Process.GetCurrentProcess().PrivateMemorySize64 / 1024.0 / 1024.0}MB");
             pcapng.ReadFile(@"..\..\..\TestCap\Input1.large.pcapng");
-            var data = MemoryMarshal.AsBytes(new Span<uint>(pcapng.Sections[0].EnhancedPackets[0].PacketData));
+            //Memory when no packet is loaded
+            Console.WriteLine($"Blocks Parsed Memory: {Process.GetCurrentProcess().PrivateMemorySize64 / 1024.0 / 1024.0}MB");
+
+            //Load first 100000 packets
+            pcapng.Sections[0].LoadPackets(0, 100000, true);
+            var data = MemoryMarshal.AsBytes(new Span<uint>(pcapng.Sections[0].EnhancedPackets[5000].PacketData));
             foreach (var b in data)
             {
                 Console.Write(b.ToString("X2"));
             }
+            Console.WriteLine();
+            Console.WriteLine($"0-100000 Loaded Memory: {Process.GetCurrentProcess().PrivateMemorySize64 / 1024.0 / 1024.0}MB");
+            //Release first 100000 packets
+            pcapng.Sections[0].UnloadAllPackets();
+            Console.WriteLine($"0-99999 Unloaded Memory: {Process.GetCurrentProcess().PrivateMemorySize64 / 1024.0 / 1024.0}MB");
+
+            //Load next 100000 packets
+            pcapng.Sections[0].LoadPackets(100000, 100000, true);
+            data = MemoryMarshal.AsBytes(new Span<uint>(pcapng.Sections[0].EnhancedPackets[150000].PacketData));
+            foreach (var b in data)
+            {
+                Console.Write(b.ToString("X2"));
+            }
+            Console.WriteLine();
+            Console.WriteLine($"100000-199999 Loaded Memory: {Process.GetCurrentProcess().PrivateMemorySize64 / 1024.0 / 1024.0}MB");
+            // Release next 100000 packets
+            pcapng.Sections[0].UnloadAllPackets();
+            Console.WriteLine($"100000-199999 Unloaded Memory: {Process.GetCurrentProcess().PrivateMemorySize64 / 1024.0 / 1024.0}MB");
+
+            //Load last 100000 packets
+            pcapng.Sections[0].LoadPackets(200000, 100000, true);
+            data = MemoryMarshal.AsBytes(new Span<uint>(pcapng.Sections[0].EnhancedPackets[250000].PacketData));
+            foreach (var b in data)
+            {
+                Console.Write(b.ToString("X2"));
+            }
+            Console.WriteLine();
+            Console.WriteLine($"200000-299999 Loaded Memory: {Process.GetCurrentProcess().PrivateMemorySize64 / 1024.0 / 1024.0}MB");
+
+            //Release last 100000 packets
+            pcapng.Sections[0].UnloadAllPackets();
+            Console.WriteLine($"200000-299999 Unloaded Memory: {Process.GetCurrentProcess().PrivateMemorySize64 / 1024.0 / 1024.0}MB");
+
             pcapng.Dispose();
         }
     }

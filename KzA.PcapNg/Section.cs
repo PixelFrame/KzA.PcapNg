@@ -18,6 +18,8 @@ namespace KzA.PcapNg
         public List<SimplePacketBlock> SimplePackets { get; } = [];
         public List<NameResolutionBlock> NameResolutions { get; } = [];
         public List<InterfaceStatisticsBlock> InterfaceStatistics { get; } = [];
+        public List<DecryptionSecretsBlock> DecryptionSecrets { get; } = [];
+        public List<CustomBlock> CustomBlocks { get; } = [];
 
         public Section() { }
         public Section(Stream stream)

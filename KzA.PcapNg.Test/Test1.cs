@@ -111,5 +111,15 @@ namespace KzA.PcapNg.Test
 
             pcapng.Dispose();
         }
+
+
+        [TestMethod]
+        public void TestFileRead2()
+        {
+            var pcapng = new PcapNg();
+            pcapng.ReadFile(@"..\..\..\TestCap\Input2.tlskey.pcapng");
+            Assert.IsTrue(pcapng.Sections[0].DecryptionSecrets[0].SecretsLength == 13392);
+            Assert.IsTrue(pcapng.Sections[0].DecryptionSecrets[0].SecretsType == SecretsType.TLSKeyLog);
+        }
     }
 }

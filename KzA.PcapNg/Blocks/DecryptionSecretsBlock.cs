@@ -1,4 +1,5 @@
 ﻿using KzA.PcapNg.Blocks.Options;
+using KzA.PcapNg.DataTypes;
 using KzA.PcapNg.Helper;
 using System;
 using System.Buffers.Binary;
@@ -15,7 +16,7 @@ namespace KzA.PcapNg.Blocks
     {
         public uint Type => 0x00000006;
         public uint TotalLength => (uint)(4 * (6 + SecretsData.Length) + Options.Sum(o => o.Size));
-        public uint SecretsType { get; set; } = 0;
+        public SecretsType SecretsType { get; set; } = 0;
         public uint SecretsLength { get; set; } = 0;
         public uint[] SecretsData { get; set; } = [];
         public List<OptionBase> Options
@@ -37,7 +38,7 @@ namespace KzA.PcapNg.Blocks
             var binSpan = new Span<byte>(bin);
             BinaryPrimitives.WriteUInt32LittleEndian(binSpan, Type);
             BinaryPrimitives.WriteUInt32LittleEndian(binSpan[4..], TotalLength);
-            BinaryPrimitives.WriteUInt32LittleEndian(binSpan[8..], SecretsType);
+            BinaryPrimitives.WriteUInt32LittleEndian(binSpan[8..], (uint)SecretsType);
             BinaryPrimitives.WriteUInt32LittleEndian(binSpan[12..], SecretsLength);
             var sdataSpan = new Span<uint>(SecretsData);
             var sdataBinSpan = MemoryMarshal.AsBytes(sdataSpan);
@@ -56,8 +57,8 @@ namespace KzA.PcapNg.Blocks
 
         public void Parse(ReadOnlySpan<byte> data, uint totalLen, bool endian)
         {
-            SecretsType = endian ? BinaryPrimitives.ReadUInt32BigEndian(data[8..]) : BinaryPrimitives.ReadUInt32LittleEndian(data[8..]);
-            SecretsLength = endian ? BinaryPrimitives.ReadUInt32BigEndian(data[12..]) : BinaryPrimitives.ReadUInt32LittleEndian(data[12..]);
+            SecretsType = (SecretsType)(endian ? BinaryPrimitives.ReadUInt32LittleEndian(data[8..]) : BinaryPrimitives.ReadUInt32BigEndian(data[8..]));
+            SecretsLength = endian ? BinaryPrimitives.ReadUInt32LittleEndian(data[12..]) : BinaryPrimitives.ReadUInt32BigEndian(data[12..]);
             SecretsData = new uint[Misc.DwordPaddedDwLength(SecretsLength)];
             var sdataSpan = new Span<uint>(SecretsData);
             var sdataBinSpan = MemoryMarshal.AsBytes(sdataSpan);

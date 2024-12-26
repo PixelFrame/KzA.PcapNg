@@ -47,6 +47,11 @@ namespace KzA.PcapNg.IO
                         spb.Parse(buffer, length, currentEndian);
                         section.SimplePackets.Add(spb);
                         break;
+                    case 0x00000004:
+                        var nrb = new NameResolutionBlock();
+                        nrb.Parse(buffer, length, currentEndian);
+                        section.NameResolutions.Add(nrb);
+                        break;
                     case 0x00000005:
                         var isb = new InterfaceStatisticsBlock();
                         isb.Parse(buffer, length, currentEndian);
@@ -56,6 +61,17 @@ namespace KzA.PcapNg.IO
                         var epb = lazyLoadMode ? new EnhancedPacketBlock(section) : new EnhancedPacketBlock();
                         epb.Parse(buffer, length, currentEndian);
                         section.EnhancedPackets.Add(epb);
+                        break;
+                    case 0x0000000A:
+                        var dsb = new DecryptionSecretsBlock();
+                        dsb.Parse(buffer, length, currentEndian);
+                        section.DecryptionSecrets.Add(dsb);
+                        break;
+                    case 0x00000BAD:
+                    case 0x40000BAD:
+                        var cb = new CustomBlock();
+                        cb.Parse(buffer, length, currentEndian);
+                        section.CustomBlocks.Add(cb);
                         break;
                     case 0x0A0D0D0A:
                         reachedNextSection = true;

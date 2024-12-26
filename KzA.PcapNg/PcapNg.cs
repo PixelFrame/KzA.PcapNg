@@ -21,10 +21,12 @@ namespace KzA.PcapNg
             {
                 writer.Write(section.Header);
                 writer.WriteAll(section.Interfaces);
+                writer.WriteAll(section.DecryptionSecrets);
                 writer.WriteAll(section.EnhancedPackets);
                 writer.WriteAll(section.SimplePackets);
                 writer.WriteAll(section.NameResolutions);
                 writer.WriteAll(section.InterfaceStatistics);
+                writer.WriteAll(section.CustomBlocks);
             }
         }
 

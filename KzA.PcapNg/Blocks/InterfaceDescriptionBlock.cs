@@ -155,6 +155,23 @@ namespace KzA.PcapNg.Blocks
             }
         }
 
+        public string PrintInfo()
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine($"Interface Description Block({Type:X8})");
+            sb.AppendLine($"SnapLen: {SnapLen}");
+            if (Options.Count > 0)
+            {
+                sb.AppendLine("Options:");
+                foreach (var option in Options)
+                {
+                    sb.Append("  ");
+                    sb.AppendLine(option.PrintInfo().Replace(Environment.NewLine, Environment.NewLine + "  "));
+                }
+            }
+            return sb.ToString();
+        }
+
         public if_name? Name { get; set; }
         public if_description? Description { get; set; }
         public List<if_IPv4addr>? IPv4Addrs { get; set; }

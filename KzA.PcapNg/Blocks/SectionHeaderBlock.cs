@@ -1,4 +1,5 @@
 ﻿using KzA.PcapNg.Blocks.Options;
+using KzA.PcapNg.DataTypes;
 using KzA.PcapNg.Helper;
 using System;
 using System.Buffers.Binary;
@@ -104,6 +105,26 @@ namespace KzA.PcapNg.Blocks
             binReader.BaseStream.Seek(-12, SeekOrigin.Current);
             var data = binReader.ReadBytes((int)len);
             Parse(data, len, LittleEndian);
+        }
+
+        public string PrintInfo()
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine($"Section Header Block({Type:X8})");
+            sb.AppendLine($"TotalLength: {TotalLength}");
+            sb.AppendLine($"BOM: {(LittleEndian ? BOM : BinaryPrimitives.ReverseEndianness(BOM)):X8}");
+            sb.AppendLine($"Version: {MajorVersion}.{MinorVersion}");
+            sb.AppendLine($"SectionLength: {SectionLength}");
+            if (Options.Count > 0)
+            {
+                sb.AppendLine("Options:");
+                foreach (var option in Options)
+                {
+                    sb.Append("  ");
+                    sb.AppendLine(option.PrintInfo().Replace(Environment.NewLine, Environment.NewLine + "  "));
+                }
+            }
+            return sb.ToString();
         }
 
         public shb_hardware? Hardware { get; set; }

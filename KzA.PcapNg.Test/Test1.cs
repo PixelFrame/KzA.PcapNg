@@ -140,5 +140,13 @@ namespace KzA.PcapNg.Test
             pcapng.ReadFile(@"..\..\..\TestCap\Input1.large.pcapng");
             pcapng.WriteFile(@"..\..\..\TestCap\Relog1.large.pcapng");
         }
+
+        [TestMethod]
+        public void Print()
+        {
+            var pcapng = new PcapNg();
+            pcapng.ReadFile(@"..\..\..\TestCap\Input3.pcapng");
+            Console.WriteLine(pcapng.PrintInfo());
+        }
     }
 }

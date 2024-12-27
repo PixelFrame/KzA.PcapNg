@@ -11,5 +11,6 @@ namespace KzA.PcapNg.Blocks
         public uint Type { get; }
         public byte[] GetBytes();
         public void Parse(ReadOnlySpan<byte> data, uint totalLen, bool endian);
+        public string PrintInfo();
     }
 }

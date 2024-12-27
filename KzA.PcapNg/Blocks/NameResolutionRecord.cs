@@ -147,5 +147,23 @@ namespace KzA.PcapNg.Blocks
             valBinSpan.CopyTo(binSpan[4..]);
             return Size;
         }
+
+        public string PrintInfo()
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine(RecordType.ToString());
+            sb.AppendLine($"RecordValueLength: {RecordValueLength}");
+            sb.Append("Value: ");
+            switch(RecordType)
+            {
+                case NrbRecordType.nrb_record_ipv4:
+                case NrbRecordType.nrb_record_ipv6:
+                    sb.AppendLine(IPAddress.ToString()); break;
+                case NrbRecordType.nrb_record_eui48:
+                case NrbRecordType.nrb_record_eui64:
+                    sb.AppendLine(MACAddress); break;
+            }
+            return sb.ToString();
+        }
     }
 }

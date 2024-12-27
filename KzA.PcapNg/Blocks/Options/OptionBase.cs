@@ -37,5 +37,14 @@ namespace KzA.PcapNg.Blocks.Options
             var valueBinSpan = MemoryMarshal.AsBytes(valueSpan);
             data[..length].CopyTo(valueBinSpan);
         }
+
+        public virtual string PrintInfo()
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine($"{GetType().Name}({Code:X4})");
+            sb.AppendLine($"Length: {Length}");
+            sb.AppendLine($"Value: {string.Join(" ", Value)}");
+            return sb.ToString();
+        }
     }
 }

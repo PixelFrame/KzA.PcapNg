@@ -52,5 +52,24 @@ namespace KzA.PcapNg.Blocks
             PrivateEnterpriseNumber = endian ? BinaryPrimitives.ReadUInt32LittleEndian(data[8..]) : BinaryPrimitives.ReadUInt32BigEndian(data[8..]);
             // Unable to implement further as we cannot tell where is the end of CustomData...
         }
+
+        public string PrintInfo()
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine($"Custom Block({Type:X8})");
+            sb.AppendLine($"TotalLength: {TotalLength}");
+            sb.AppendLine($"Private Enterprise Number: {PrivateEnterpriseNumber}");
+            sb.AppendLine($"Custom Data");
+            if (Options != null)
+            {
+                sb.AppendLine("Options:");
+                foreach (var option in Options)
+                {
+                    sb.Append("  ");
+                    sb.AppendLine(option.PrintInfo().Replace(Environment.NewLine, Environment.NewLine + "  "));
+                }
+            }
+            return sb.ToString();
+        }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using KzA.PcapNg.Blocks;
 using KzA.PcapNg.Helper;
 using KzA.PcapNg.IO;
+using System.Text;
 
 namespace KzA.PcapNg
 {
@@ -120,6 +121,19 @@ namespace KzA.PcapNg
         {
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
+        }
+
+        public string PrintInfo()
+        {
+            var sb = new StringBuilder();
+            foreach (var section in Sections)
+            {
+                foreach (var block in section.AllBlocks)
+                {
+                    sb.AppendLine(block.PrintInfo());
+                }
+            }
+            return sb.ToString();
         }
     }
 }

@@ -90,6 +90,26 @@ namespace KzA.PcapNg.Blocks
 
         }
 
+        public string PrintInfo()
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine($"Decryption Secrets Block({Type:X8})");
+            sb.AppendLine($"TotalLength: {TotalLength}");
+            sb.AppendLine($"SecretsType: {SecretsType}");
+            sb.AppendLine($"SecretsLength: {SecretsLength}");
+            sb.AppendLine($"SecretsData");
+            if (Options.Count > 0)
+            {
+                sb.AppendLine("Options:");
+                foreach (var option in Options)
+                {
+                    sb.Append("  ");
+                    sb.AppendLine(option.PrintInfo().Replace(Environment.NewLine, Environment.NewLine + "  "));
+                }
+            }
+            return sb.ToString();
+        }
+
         public List<opt_comment>? Comments { get; set; }
         public List<CustomOption>? CustomOptions { get; set; }
     }

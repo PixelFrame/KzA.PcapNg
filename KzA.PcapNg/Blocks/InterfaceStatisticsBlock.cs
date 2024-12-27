@@ -1,4 +1,5 @@
 ﻿using KzA.PcapNg.Blocks.Options;
+using KzA.PcapNg.DataTypes;
 using KzA.PcapNg.Helper;
 using System;
 using System.Buffers.Binary;
@@ -17,6 +18,7 @@ namespace KzA.PcapNg.Blocks
         public uint InterfaceID { get; set; } = 0;
         public uint TimestampUpper { get; set; } = 0;
         public uint TimestampLower { get; set; } = 0;
+        public Timestamp Timestamp => new(TimestampUpper, TimestampLower);
         public List<OptionBase> Options
         {
             get
@@ -109,6 +111,25 @@ namespace KzA.PcapNg.Blocks
                 }
                 offset += Misc.DwordPaddedLength(length) + 4;
             }
+        }
+
+        public string PrintInfo()
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine($"Interface Statistic Block({Type:X8})");
+            sb.AppendLine($"TotalLength: {TotalLength}");
+            sb.AppendLine($"InterfaceID: {InterfaceID}");
+            sb.AppendLine($"Timestamp: {Timestamp} ({TimestampUpper}.{TimestampLower})");
+            if (Options.Count > 0)
+            {
+                sb.AppendLine("Options:");
+                foreach (var option in Options)
+                {
+                    sb.Append("  ");
+                    sb.AppendLine(option.PrintInfo().Replace(Environment.NewLine, Environment.NewLine + "  "));
+                }
+            }
+            return sb.ToString();
         }
 
         public isb_starttime? StartTime { get; set; }

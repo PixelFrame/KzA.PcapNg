@@ -1,4 +1,5 @@
 ﻿using KzA.PcapNg.Blocks.Options;
+using KzA.PcapNg.DataTypes;
 using KzA.PcapNg.Helper;
 using System;
 using System.Buffers.Binary;
@@ -107,6 +108,29 @@ namespace KzA.PcapNg.Blocks
                 }
                 offset += Misc.DwordPaddedLength(length) + 4;
             }
+        }
+
+        public string PrintInfo()
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine($"Name Resolution Block({Type:X8})");
+            sb.AppendLine($"TotalLength: {TotalLength}");
+            sb.AppendLine($"Records:");
+            foreach (var record in Records)
+            {
+                    sb.Append("  ");
+                sb.AppendLine(record.PrintInfo().Replace(Environment.NewLine, Environment.NewLine + "  "));
+            }
+            if (Options.Count > 0)
+            {
+                sb.AppendLine("Options:");
+                foreach (var option in Options)
+                {
+                    sb.Append("  ");
+                    sb.AppendLine(option.PrintInfo().Replace(Environment.NewLine, Environment.NewLine + "  "));
+                }
+            }
+            return sb.ToString();
         }
 
         public ns_dnsname? DnsName { get; set; }

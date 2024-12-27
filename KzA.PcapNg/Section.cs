@@ -23,6 +23,25 @@ namespace KzA.PcapNg
         public List<DecryptionSecretsBlock> DecryptionSecrets { get; } = [];
         public List<CustomBlock> CustomBlocks { get; } = [];
 
+        public IReadOnlyList<IBlock> AllBlocks
+        {
+            get
+            {
+                var blocks = new List<IBlock>
+                {
+                    Header
+                };
+                blocks.AddRange(Interfaces);
+                blocks.AddRange(NameResolutions);
+                blocks.AddRange(DecryptionSecrets);
+                blocks.AddRange(EnhancedPackets);
+                blocks.AddRange(SimplePackets);
+                blocks.AddRange(CustomBlocks);
+                blocks.AddRange(InterfaceStatistics);
+                return blocks;
+            }
+        }
+        
         public Section() { }
         public Section(PcapNg pcapNg)
         {

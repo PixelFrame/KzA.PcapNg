@@ -197,6 +197,28 @@ namespace KzA.PcapNg.Blocks
             if (section != null) packetData = [];
         }
 
+        public string PrintInfo()
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine($"Enhanced Packet Block({Type:X8})");
+            sb.AppendLine($"TotalLength: {TotalLength}");
+            sb.AppendLine($"InterfaceID: {InterfaceID}");
+            sb.AppendLine($"Timestamp: {Timestamp.DateTime} ({TimestampUpper}.{TimestampLower})");
+            sb.AppendLine($"CapturedPacketLength: {CapturedPacketLength}");
+            sb.AppendLine($"OriginalPacketLength: {OriginalPacketLength}");
+            sb.AppendLine($"PacketData");
+            if (Options.Count > 0)
+            {
+                sb.AppendLine("Options:");
+                foreach (var option in Options)
+                {
+                    sb.Append("  ");
+                    sb.AppendLine(option.PrintInfo().Replace(Environment.NewLine, Environment.NewLine + "  "));
+                }
+            }
+            return sb.ToString();
+        }
+
         public epb_flags? Flags = null;
         public List<epb_hash>? Hash { get; set; }
         public epb_dropcount? DropCount { get; set; } = null;

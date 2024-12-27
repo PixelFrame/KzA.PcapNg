@@ -1,4 +1,5 @@
-﻿using KzA.PcapNg.Helper;
+﻿using KzA.PcapNg.DataTypes;
+using KzA.PcapNg.Helper;
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
@@ -103,6 +104,17 @@ namespace KzA.PcapNg.Blocks
         internal void UnloadData()
         {
             if (section != null) packetData = [];
+        }
+
+        public string PrintInfo()
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine($"Simple Packet Block({Type:X8})");
+            sb.AppendLine($"TotalLength: {TotalLength}");
+            sb.AppendLine($"OriginalPacketLength: {OriginalPacketLength}");
+            sb.AppendLine($"PacketData");
+            
+            return sb.ToString();
         }
     }
 }

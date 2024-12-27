@@ -123,6 +123,17 @@ namespace KzA.PcapNg.Test
         }
 
         [TestMethod]
+        public void TestFileRead3()
+        {
+            var pcapng = new PcapNg();
+            pcapng.ReadFile(@"..\..\..\TestCap\Input3.pcapng");
+            Assert.IsTrue(pcapng.Sections[0].NameResolutions[0].Records[0].RecordType == NrbRecordType.nrb_record_ipv4);
+            Assert.IsTrue(pcapng.Sections[0].NameResolutions[0].Records[0].Name == "CLIENT");
+            Assert.IsTrue(pcapng.Sections[0].NameResolutions[0].Records[3].RecordType == NrbRecordType.nrb_record_ipv6);
+            Assert.IsTrue(pcapng.Sections[0].NameResolutions[0].Records[3].Name == "SERVER6");
+        }
+
+        [TestMethod]
         public void Relog()
         {
             var pcapng = new PcapNg(true);

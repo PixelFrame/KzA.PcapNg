@@ -60,27 +60,22 @@ namespace KzA.PcapNg.Blocks
         public void Parse(ReadOnlySpan<byte> data, uint totalLen, bool endian)
         {
             var offset = 8;
-            var reachedEnd = false;
-            while (offset < totalLen - 4 && !reachedEnd)
+            while (offset < totalLen - 4)
             {
                 var record = new NameResolutionRecord();
-                record.RecordType = endian ? BinaryPrimitives.ReadUInt16LittleEndian(data[offset..]) : BinaryPrimitives.ReadUInt16BigEndian(data[offset..]);
+                record.RecordType = (DataTypes.NrbRecordType)(endian ? BinaryPrimitives.ReadUInt16LittleEndian(data[offset..]) : BinaryPrimitives.ReadUInt16BigEndian(data[offset..]));
                 offset += 2;
                 record.RecordValueLength = endian ? BinaryPrimitives.ReadUInt16LittleEndian(data[offset..]) : BinaryPrimitives.ReadUInt16BigEndian(data[offset..]);
                 offset += 2;
-                if (record.RecordType == 0)
-                {
-                    reachedEnd = true;
-                    break;
-                }
-                record.RecordValue = new uint[record.RecordValueLength];
+                if (record.RecordType == 0) break;
+                record.RecordValue = new uint[Misc.DwordPaddedDwLength(record.RecordValueLength)];
                 var valueSpan = new Span<uint>(record.RecordValue);
                 var valueBinSpan = MemoryMarshal.AsBytes(valueSpan);
-                data[offset..(offset + record.RecordValueLength * 4)].CopyTo(valueBinSpan);
-                offset += record.RecordValueLength * 4;
+                data[offset..(offset + record.RecordValueLength)].CopyTo(valueBinSpan);
+                offset += Misc.DwordPaddedLength(record.RecordValueLength);
                 Records.Add(record);
             }
-            reachedEnd = false;
+            var reachedEnd = false;
             while (offset < totalLen - 4 && !reachedEnd)
             {
                 var code = endian ? BinaryPrimitives.ReadUInt16LittleEndian(data[offset..]) : BinaryPrimitives.ReadUInt16BigEndian(data[offset..]);

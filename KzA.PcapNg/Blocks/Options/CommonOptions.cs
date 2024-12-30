@@ -20,6 +20,11 @@ namespace KzA.PcapNg.Blocks.Options
             BinaryPrimitives.WriteUInt32LittleEndian(binSpan, 0);
             return 4;
         }
+
+        public override string PrintInfo()
+        {
+            return "opt_endofopt";
+        }
     }
 
     public class opt_comment : Utf8StringOption

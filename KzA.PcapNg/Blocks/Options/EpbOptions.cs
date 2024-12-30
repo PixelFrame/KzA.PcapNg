@@ -33,6 +33,22 @@ namespace KzA.PcapNg.Blocks.Options
         public epb_flags(uint flags) { Flags = (EpbFlags)flags; }
         public static implicit operator epb_flags(EpbFlags flags) => new(flags);
         public static implicit operator epb_flags(uint flags) => new(flags);
+
+        public override string PrintInfo()
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine($"epb_flags(0004)");
+            sb.AppendLine($"Length: {Length}");
+            sb.AppendLine($"Value:");
+            sb.AppendLine($"  Direction: {Flags.Direction}");
+            sb.AppendLine($"  ReceptionType: {Flags.ReceptionType}");
+            sb.AppendLine($"  FCS Length: {Flags.FcsLen}");
+            sb.AppendLine($"  Checksum Not Ready: {Flags.ChecksumNotReady}");
+            sb.AppendLine($"  Checksum Valid: {Flags.ChecksumValid}");
+            sb.AppendLine($"  TCP Segmentation Offloaded: {Flags.TcpSegmentationOffloaded}");
+            sb.AppendLine($"  Link-layer-dependent Errors: {Flags.LinkLayerErrors}");
+            return sb.ToString();
+        }
     }
 
     public class epb_hash : OptionBase

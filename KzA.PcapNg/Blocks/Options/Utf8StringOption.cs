@@ -39,5 +39,14 @@ namespace KzA.PcapNg.Blocks.Options
             Encoding.UTF8.GetBytes(_str, binSpan[4..]);
             return Size;
         }
+
+        public override string PrintInfo()
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine($"{GetType().Name}({Code:X4})");
+            sb.AppendLine($"Length: {Length}");
+            sb.AppendLine($"Value: {StringValue}");
+            return sb.ToString();
+        }
     }
 }
